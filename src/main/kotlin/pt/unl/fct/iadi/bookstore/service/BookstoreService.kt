@@ -75,9 +75,9 @@ class BookstoreService
     // US8
     fun createReview(isbn: String, review: Review): Review{
         getBook(isbn)
-        val id = nextReviewId.getAndAdd(1)
-        val newReview = Review(id, review.rating, review.comment)
-        reviews.computeIfAbsent(isbn){ ConcurrentHashMap() }[id] = newReview
+        val reviewId = nextReviewId.getAndAdd(1)
+        val newReview = Review(reviewId, review.rating, review.comment)
+        reviews.computeIfAbsent(isbn){ ConcurrentHashMap() }[reviewId] = newReview
         return newReview
     }
 
