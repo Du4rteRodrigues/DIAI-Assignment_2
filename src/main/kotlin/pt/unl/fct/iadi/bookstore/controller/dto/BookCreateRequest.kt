@@ -1,9 +1,13 @@
 package pt.unl.fct.iadi.bookstore.controller.dto
 
-import jakarta.validation.constraints.*
 import org.hibernate.validator.constraints.URL
 import java.math.BigDecimal
 import io.swagger.v3.oas.annotations.media.Schema
+import jakarta.validation.constraints.DecimalMin
+import jakarta.validation.constraints.NotBlank
+import jakarta.validation.constraints.Positive
+import jakarta.validation.constraints.Size
+import org.jetbrains.annotations.NotNull
 
 @Schema(description = "Request body for creating a new book")
 data class BookCreateRequest(
@@ -23,7 +27,7 @@ data class BookCreateRequest(
     val author: String,
 
     @Schema(description = "Book price (must be greater than 0)")
-    @field:NotNull(message = "Price cannot be null")
+    @field:NotNull
     @field:Positive
     @field:DecimalMin(value = "0.01", message = "Price must be greater than 0")
     val price: BigDecimal,
