@@ -11,6 +11,9 @@ import java.math.BigDecimal
 
 @Schema(description = "Image ID")
 data class BookReplaceRequest(
+    @Schema(description = "Image ID")
+    @field:NotBlank
+    val isbn: String,
 
     @Schema(description = "Book Name")
     @field:NotBlank
