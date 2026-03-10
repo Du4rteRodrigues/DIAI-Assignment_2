@@ -1,6 +1,6 @@
 package pt.unl.fct.iadi.bookstore.service
 
-import pt.unl.fct.iadi.bookstore.controller.dto.BookCreateRequest
+import org.springframework.stereotype.Service
 import pt.unl.fct.iadi.bookstore.controller.dto.PartialBookUpdate
 import pt.unl.fct.iadi.bookstore.controller.dto.ReviewPartialUpdate
 import pt.unl.fct.iadi.bookstore.domain.Book
@@ -8,6 +8,7 @@ import pt.unl.fct.iadi.bookstore.domain.Review
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
+@Service
 class BookstoreService
 {
     private val books = ConcurrentHashMap<String, Book>()
@@ -18,11 +19,10 @@ class BookstoreService
     fun listBooks(): List<Book> = books.values.toList()
 
     // US2
-    fun createBook(request: BookCreateRequest): Book{
-        if(books.containsKey(request.isbn)) throw ValidationException("Book already exists")
+    fun createBook(request: Book): Book{
+        if(books.containsKey(request.isbn)) throw BookAlreadyExistsException("Book already exists")
         val book = Book(request.isbn, request.title, request.author, request.price, request.image)
         books[book.isbn] = book
-        reviews.remove(book.isbn)
         return book
     }
 
@@ -35,7 +35,6 @@ class BookstoreService
     fun replaceBook(isbn: String, book : Book): Book{
         if(book.isbn != isbn)throw ValidationException("${book.isbn} is not equal to isbn")
         books[isbn] = book
-        reviews.remove(isbn)
         return book
     }
 
@@ -52,15 +51,15 @@ class BookstoreService
     }
 
     // US6
-    fun deleteBook(isbn: String) : Book {
-        if (!books.containsKey(isbn)) throw BookNotFoundException("Book $isbn not found")
+    fun deleteBook(isbn: String){
+        getBook(isbn)
         books.remove(isbn)
         reviews.remove(isbn)
-        return getBook(isbn)
     }
 
     // US7
     fun listReviews(isbn: String): List<Review>{
+        getBook(isbn)
         return reviews.getOrDefault(isbn, emptyMap()).values.toList()
     }
 
@@ -86,6 +85,7 @@ class BookstoreService
     fun replaceReview(isbn: String, id: Long, review: Review): Review{
         getBook(isbn)
         val reviews = reviews[isbn] ?: throw ReviewNotFoundException("Review for $isbn not found")
+        getReview(isbn, id)
         val newReview = Review(id, review.rating, review.comment)
         reviews[id] = newReview
         return newReview

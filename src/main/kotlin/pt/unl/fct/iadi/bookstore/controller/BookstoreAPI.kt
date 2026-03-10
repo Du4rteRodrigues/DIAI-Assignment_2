@@ -1,6 +1,7 @@
 package pt.unl.fct.iadi.bookstore.controller
 
 import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.DeleteMapping
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PatchMapping
@@ -31,7 +32,7 @@ interface BookstoreAPI {
     // US2
     @PostMapping("/books")
     @ResponseStatus(HttpStatus.CREATED)
-    fun createBook(@RequestBody book: BookCreateRequest): BookResponse
+    fun createBook(@RequestBody book: BookCreateRequest): ResponseEntity<BookResponse>
 
     // US3
     @GetMapping("/books/{isbn}")
@@ -59,7 +60,7 @@ interface BookstoreAPI {
     // US8
     @PostMapping("/books/{isbn}/reviews")
     @ResponseStatus(HttpStatus.CREATED)
-    fun createReview(@PathVariable isbn: String, @RequestBody review: ReviewCreateRequest): ReviewResponse
+    fun createReview(@PathVariable isbn: String, @RequestBody review: ReviewCreateRequest): ResponseEntity<ReviewResponse>
 
     // US9
     @PutMapping("/books/{isbn}/reviews/{id}")

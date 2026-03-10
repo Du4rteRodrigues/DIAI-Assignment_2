@@ -1,5 +1,6 @@
 package pt.unl.fct.iadi.bookstore.controller
 
+import jakarta.validation.Valid
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.RestController
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder
@@ -27,8 +28,7 @@ class BookstoreController(
         return books.map { convertBookToResponse(it) }
     }
 
-    // Prefer changing BookstoreAPI to return ResponseEntity<BookResponse>
-    override fun createBook(book: BookCreateRequest): ResponseEntity<BookResponse> {
+    override fun createBook(@Valid book: BookCreateRequest): ResponseEntity<BookResponse> {
         val createdBook = service.createBook(convertCreateRequestToBook(book))
         val response = convertBookToResponse(createdBook)
 
@@ -46,21 +46,14 @@ class BookstoreController(
         return convertBookToResponse(book)
     }
 
-    override fun replaceBook(isbn: String, book: BookReplaceRequest): BookResponse {
-        // Use the request body to build a new domain Book
+    override fun replaceBook(@Valid isbn: String, book: BookReplaceRequest): BookResponse {
         val replacement = convertReplaceRequestToBook(isbn, book)
         val replacedBook = service.replaceBook(isbn, replacement)
         return convertBookToResponse(replacedBook)
     }
 
-    override fun partialUpdateBook(isbn: String, update: PartialBookUpdate): BookResponse {
-        // Either map PartialBookUpdate to domain-level partial update, or let the service accept primitives
-        val updatedBook = service.partialUpdateBook(
-            isbn = isbn,
-            title = update.title,
-            author = update.author,
-            price = update.price,
-            image = update.image
+    override fun partialUpdateBook(@Valid isbn: String, update: PartialBookUpdate): BookResponse {
+        val updatedBook = service.partialUpdateBook(isbn, update
         )
         return convertBookToResponse(updatedBook)
     }
@@ -76,8 +69,7 @@ class BookstoreController(
         return reviews.map { convertReviewToResponse(it) }
     }
 
-    // Prefer changing BookstoreAPI to return ResponseEntity<ReviewResponse>
-    override fun createReview(isbn: String, review: ReviewCreateRequest): ResponseEntity<ReviewResponse> {
+    override fun createReview(@Valid isbn: String, review: ReviewCreateRequest): ResponseEntity<ReviewResponse> {
         val createdReview = service.createReview(isbn, convertCreateRequestToReview(review))
         val response = convertReviewToResponse(createdReview)
 
@@ -90,19 +82,14 @@ class BookstoreController(
         return ResponseEntity.created(location).body(response)
     }
 
-    override fun replaceReview(isbn: String, id: Long, review: ReviewReplaceRequest): ReviewResponse {
+    override fun replaceReview(@Valid isbn: String, id: Long, review: ReviewReplaceRequest): ReviewResponse {
         val replacement = convertReplaceRequestToReview(id, review)
         val replacedReview = service.replaceReview(isbn, id, replacement)
         return convertReviewToResponse(replacedReview)
     }
 
-    override fun partialUpdateReview(isbn: String, id: Long, update: ReviewPartialUpdate): ReviewResponse {
-        val updatedReview = service.partialUpdateReview(
-            isbn = isbn,
-            id = id,
-            rating = update.rating,
-            comment = update.comment
-        )
+    override fun partialUpdateReview(@Valid isbn: String, id: Long, update: ReviewPartialUpdate): ReviewResponse {
+        val updatedReview = service.partialUpdateReview(isbn, id,update)
         return convertReviewToResponse(updatedReview)
     }
 
@@ -113,51 +100,25 @@ class BookstoreController(
     //**** Mapping functions ****
 
     private fun convertBookToResponse(book: Book): BookResponse =
-        BookResponse(
-            isbn = book.isbn,
-            title = book.title,
-            author = book.author,
-            price = book.price,
-            image = book.image,
-            reviews = book.reviews.map { convertReviewToResponse(it) }
-        )
+        BookResponse(book.isbn, book.title, book.author, book.price, book.image as String)
 
     private fun convertReviewToResponse(review: Review): ReviewResponse =
-        ReviewResponse(
-            id = review.id,
-            rating = review.rating,
-            comment = review.comment
+        ReviewResponse(review.id, review.rating, review.comment
         )
 
     private fun convertCreateRequestToBook(request: BookCreateRequest): Book =
-        Book(
-            isbn = request.isbn,
-            title = request.title,
-            author = request.author,
-            price = request.price,
-            image = request.image
+        Book(request.isbn, request.title, request.author, request.price, request.image
         )
 
     private fun convertReplaceRequestToBook(isbn: String, request: BookReplaceRequest): Book =
-        Book(
-            isbn = isbn,
-            title = request.title,
-            author = request.author,
-            price = request.price,
-            image = request.image
+        Book(isbn, request.title, request.author, request.price, request.image
         )
 
     private fun convertCreateRequestToReview(request: ReviewCreateRequest): Review =
-        Review(
-            id = 0, // or null / default depending on your domain definition
-            rating = request.rating,
-            comment = request.comment
+        Review(0, request.rating, request.comment
         )
 
     private fun convertReplaceRequestToReview(id: Long, request: ReviewReplaceRequest): Review =
-        Review(
-            id = id,
-            rating = request.rating,
-            comment = request.comment
+        Review(id, request.rating, request.comment
         )
 }
