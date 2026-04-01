@@ -15,6 +15,8 @@ import pt.unl.fct.iadi.bookstore.controller.dto.ReviewResponse
 import pt.unl.fct.iadi.bookstore.domain.Book
 import pt.unl.fct.iadi.bookstore.domain.Review
 import pt.unl.fct.iadi.bookstore.service.BookstoreService
+import org.springframework.security.access.prepost.PreAuthorize
+import org.springframework.security.core.context.SecurityContextHolder
 
 @RestController
 class BookstoreController(
@@ -58,6 +60,7 @@ class BookstoreController(
         return convertBookToResponse(updatedBook)
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     override fun deleteBook(isbn: String) {
         service.deleteBook(isbn)
     }
@@ -82,17 +85,22 @@ class BookstoreController(
         return ResponseEntity.created(location).body(response)
     }
 
+    @PreAuthorize("@reviewSecurity.isAuthor(#id, authentication.name)")
     override fun replaceReview(@Valid isbn: String, id: Long, review: ReviewReplaceRequest): ReviewResponse {
         val replacement = convertReplaceRequestToReview(id, review)
         val replacedReview = service.replaceReview(isbn, id, replacement)
         return convertReviewToResponse(replacedReview)
     }
 
+    @PreAuthorize("@reviewSecurity.isAuthor(#id, authentication.name)")
     override fun partialUpdateReview(@Valid isbn: String, id: Long, update: ReviewPartialUpdate): ReviewResponse {
         val updatedReview = service.partialUpdateReview(isbn, id,update)
         return convertReviewToResponse(updatedReview)
     }
 
+    @PreAuthorize(
+        "@reviewSecurity.isAuthor(#id, authentication.name) or hasRole('ADMIN')"
+    )
     override fun deleteReview(isbn: String, id: Long) {
         service.deleteReview(isbn, id)
     }
@@ -103,7 +111,7 @@ class BookstoreController(
         BookResponse(book.isbn, book.title, book.author, book.price, book.image as String)
 
     private fun convertReviewToResponse(review: Review): ReviewResponse =
-        ReviewResponse(review.id, review.rating, review.comment
+        ReviewResponse(review.id, review.rating, review.comment, review.author
         )
 
     private fun convertCreateRequestToBook(request: BookCreateRequest): Book =

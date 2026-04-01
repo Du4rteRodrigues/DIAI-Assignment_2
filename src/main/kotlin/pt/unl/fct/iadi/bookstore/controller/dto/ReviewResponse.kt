@@ -12,5 +12,7 @@ data class ReviewResponse(
     val rating: Int,
 
     @Schema(description = "Optional comment about the book")
-    val comment: String?
+    val comment: String?,
+
+    val author: String?
 )

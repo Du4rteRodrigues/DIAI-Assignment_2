@@ -115,7 +115,7 @@ interface BookstoreAPI {
     @ApiResponses(
         value = [
             ApiResponse(
-                responseCode = "200",
+                responseCode = "201",
                 description = "Book replaced"
             ),
             ApiResponse(

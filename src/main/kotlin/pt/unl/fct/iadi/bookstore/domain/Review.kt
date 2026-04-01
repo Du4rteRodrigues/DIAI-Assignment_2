@@ -10,16 +10,16 @@ import java.math.BigDecimal
 data class Review(
 
     @Schema(description = "ID of the review")
-    @NotBlank
     val id: Long,
 
     @Schema(description = "Rating of the review")
-    @NotBlank
     @Min(1) @Max(5)
     val rating: Int,
 
     @Schema(description = "Comment of the review")
     @NotBlank
     @Size(min = 1,max = 500)
-    val comment: String?
+    val comment: String?,
+
+    var author: String? = null
 )
