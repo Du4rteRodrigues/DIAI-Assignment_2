@@ -27,12 +27,7 @@ class RequestLoggingFilter : OncePerRequestFilter() {
             SecurityContextHolder.getContext().authentication?.name ?: "anonymous"
 
         logger.info(
-            "[{}] [{}] {} {} [{}]",
-            appName,
-            principal,
-            request.method,
-            request.requestURI,
-            response.status
+            "[${appName}] [${principal}] ${request.method} ${request.requestURI} [${response.status}]"
         )
     }
 }
