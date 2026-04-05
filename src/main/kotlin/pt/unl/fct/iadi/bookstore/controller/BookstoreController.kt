@@ -32,7 +32,6 @@ class BookstoreController(
 
     override fun createBook(@Valid book: BookCreateRequest): ResponseEntity<BookResponse> {
         val createdBook = service.createBook(convertCreateRequestToBook(book))
-        val response = convertBookToResponse(createdBook)
 
         val location = ServletUriComponentsBuilder
             .fromCurrentRequest()
@@ -40,7 +39,7 @@ class BookstoreController(
             .buildAndExpand(createdBook.isbn)
             .toUri()
 
-        return ResponseEntity.created(location).body(response)
+        return ResponseEntity.created(location).build()
     }
 
     override fun getBook(isbn: String): BookResponse {

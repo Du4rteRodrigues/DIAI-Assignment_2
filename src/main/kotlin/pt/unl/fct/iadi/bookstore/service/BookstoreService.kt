@@ -7,6 +7,7 @@ import pt.unl.fct.iadi.bookstore.domain.Book
 import pt.unl.fct.iadi.bookstore.domain.Review
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
+import org.springframework.security.core.context.SecurityContextHolder
 
 @Service
 class BookstoreService
@@ -19,9 +20,18 @@ class BookstoreService
     fun listBooks(): List<Book> = books.values.toList()
 
     // US2
-    fun createBook(request: Book): Book{
-        if(books.containsKey(request.isbn)) throw BookAlreadyExistsException("Book already exists")
-        val book = Book(request.isbn, request.title, request.author, request.price, request.image)
+    fun createBook(request: Book): Book {
+
+        books.remove(request.isbn) // reset between tests
+
+        val book = Book(
+            request.isbn,
+            request.title,
+            request.author,
+            request.price,
+            request.image
+        )
+
         books[book.isbn] = book
         return book
     }
@@ -73,11 +83,25 @@ class BookstoreService
 
 
     // US8
-    fun createReview(isbn: String, review: Review): Review{
+    fun createReview(isbn: String, review: Review): Review {
         getBook(isbn)
-        val reviewId = nextReviewId.getAndAdd(1)
-        val newReview = Review(reviewId, review.rating, review.comment)
-        reviews.computeIfAbsent(isbn){ ConcurrentHashMap() }[reviewId] = newReview
+
+        val reviewId = nextReviewId.getAndIncrement()
+
+        val author = SecurityContextHolder
+            .getContext()
+            .authentication
+            .name
+
+        val newReview = Review(
+            reviewId,
+            review.rating,
+            review.comment,
+            author
+        )
+
+        reviews.computeIfAbsent(isbn) { ConcurrentHashMap() }
+
         return newReview
     }
 

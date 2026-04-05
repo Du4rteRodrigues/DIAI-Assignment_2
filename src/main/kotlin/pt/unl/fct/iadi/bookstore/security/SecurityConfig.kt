@@ -10,6 +10,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder
 import org.springframework.security.crypto.password.PasswordEncoder
 import org.springframework.security.provisioning.InMemoryUserDetailsManager
 import org.springframework.security.web.SecurityFilterChain
+import org.springframework.http.HttpMethod
 
 @Configuration
 @EnableMethodSecurity
@@ -23,15 +24,30 @@ class SecurityConfig(
         http
             .csrf { it.disable() }
             .authorizeHttpRequests {
+
                 it.requestMatchers(
                     "/swagger-ui/**",
                     "/v3/api-docs/**"
                 ).permitAll()
-                    .anyRequest().authenticated()
+
+                // Public GET endpoints
+                it.requestMatchers(HttpMethod.GET, "/books/**").permitAll()
+
+                // Only EDITOR can create books
+                it.requestMatchers(HttpMethod.POST, "/books")
+                    .hasRole("EDITOR")
+
+                // Everything else requires auth
+                it.anyRequest().authenticated()
             }
             .httpBasic { }
 
-        http.addFilterBefore(apiTokenFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter::class.java)
+        http.addFilterBefore(
+            apiTokenFilter,
+            org.springframework.security.web.authentication
+                .UsernamePasswordAuthenticationFilter::class.java
+        )
+
         http.addFilterAfter(requestLoggingFilter, ApiTokenFilter::class.java)
 
         return http.build()
