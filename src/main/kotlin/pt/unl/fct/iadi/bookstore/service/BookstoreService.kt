@@ -22,7 +22,9 @@ class BookstoreService
     // US2
     fun createBook(request: Book): Book {
 
-        books.remove(request.isbn) // reset between tests
+        if (books.containsKey(request.isbn)) {
+            throw BookAlreadyExistsException("Book already exists")
+        }
 
         val book = Book(
             request.isbn,
